@@ -90,7 +90,7 @@ def repo_dir(repo, *path, mkdir=False):
             raise Exception("Not a directory %s" % path)
 
     if mkdir:
-        os.mkdirs(path)
+        os.makedirs(path)
         return path
     else:
         return None
