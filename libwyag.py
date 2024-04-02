@@ -170,7 +170,7 @@ def repo_find(path=".", required=True):
     # Recursive case
     return repo_find(parent, required)
 
-def GitObject(object):
+class GitObject(object):
     def __init__(self, data=None):
         if data != None:
             self.deserialize(data)
