@@ -450,3 +450,39 @@ def log_graphviz(repo, sha, seen):
         p = p.decode("ascii")
         print("  c_{0} -> c_{1};".format(sha, p))
         log_graphviz(repo, p, seen)
+
+class GitTreeLeaf(object):
+    def __init__(self, mode, path, sha):
+        self.mode = mode
+        self.path = path
+        self.sha = sha
+
+def tree_parse_one(raw, start=0):
+    # Find the space terminator of the mode
+    x = raw.find(b' ', start)
+    assert x-start == 5 or x-start == 6
+
+    # Read the mode
+    mode = raw[start:x]
+    if len(mode) == 5:
+        # Normalize to 6 bytes
+        mode = b" " + mode
+
+    # Find the null terminator of the path
+    y = raw.find(b'\00', x)
+    # and read the path
+    path = raw[x+1:y]
+
+    # Read the sha and convert to hex string
+    sha = format(int.from_bytes(raw[y+1:y+21], "big"), "040x")
+    return y+21, GitTreeLeaf(mode, path.decode("utf8"), sha)
+
+def tree_parse(raw):
+    pos = 0
+    max = len(raw)
+    ret = list()
+    while pos < max:
+        pos, data = tree_parse_one(raw, pos)
+        ret.append(data)
+
+    return ret
