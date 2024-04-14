@@ -497,3 +497,27 @@ def tree_leaf_sort_key(leaf):
         return leaf.path
     else:
         return leaf.path + "/"
+
+def tree_serialize(obj):
+    obj.items.sort(key=tree_leaf_sort_key)
+    ret = b''
+    for i in obj.items:
+        ret += i.mode
+        ret += b' '
+        ret += i.path.encode("utf8")
+        ret += b'\0x00'
+        sha = int(i.sha, 16)
+        ret += sha.to_bytes(20, byteorder="big")
+    return ret
+
+class GitTree(GitObject):
+    fmt = b'tree'
+
+    def deserialize(self, data):
+        self.items = tree_parse(data)
+
+    def serialize(self):
+        return tree_serialize(self)
+
+    def init(self):
+        self.items = list()
