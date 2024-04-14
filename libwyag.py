@@ -486,3 +486,14 @@ def tree_parse(raw):
         ret.append(data)
 
     return ret
+
+# Notice this isn't a comparison function, but a conversion function.
+# Python's default sort doesn't accept a custom comparison function, like in
+# most languages, but a `key` argument that returns a new value, which is
+# compared using the default rules. So we just return the leaf name, with an
+# extra / if it's a directory.
+def tree_leaf_sort_key(leaf):
+    if leaf.mode.startswith(b"10"):
+        return leaf.path
+    else:
+        return leaf.path + "/"
