@@ -561,3 +561,9 @@ def ls_tree(repo, ref, recursive=None, prefix=""):
                 os.path.join(prefix, item.path)))
         else: # This is a branch, recurse
             ls_tree(repo, item.sha, recursive, os.path.join(prefix, item.path))
+
+argsp = argsubparsers.add_parser("checkout", help="Checkout a commit inside of a directory.")
+argsp.add_argument("commit",
+                   help="The commit or tree to checkout.")
+argsp.add_argument("path",
+                   help="The EMPTY directory to checkout on.")
