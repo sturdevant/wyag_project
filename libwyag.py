@@ -321,7 +321,38 @@ def object_resolve(repo, name):
     return candidates
 
 def object_find(repo, name, fmt=None, follow=True):
-    return name
+    sha = object_resolve(repo, name)
+
+    if not sha:
+        raise Exception("No such reference {0}.".format(name))
+
+    if len(sha) > 1:
+        raise Exception("Ambiguous reference {0}: Candidates are:\n - {1}.".format(name, "\n - ".join(sha)))
+
+    sha = sha[0]
+
+    if not fmt:
+        return sha
+
+    while True:
+        obj = object_read(repo, sha)
+        #     ^^^^^^^^^^^ < this is a bit agressive: we're reading the full
+        # object just to get its type. And we're doing that in a loop, albeit
+        # normally short. Don't expect high performance here.
+
+        if obj.fmt == fmt:
+            return sha
+
+        if not follow:
+            return None
+
+        # Follow tags
+        if obj.fmt == b'tag':
+            sha = obj.kvlm[b'object'].decode("ascii")
+        elif obj.fmt == b'commit' and fmt == b'tree':
+            sha = obj.kvlm[b'tree'].decode("ascii")
+        else:
+            return None
 
 argsp = argsubparsers.add_parser(
         "hash-object",
