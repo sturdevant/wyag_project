@@ -803,3 +803,12 @@ argsp.add_argument("--wyag-type",
 
 argsp.add_argument("name",
                    help="The name to parse")
+
+def cmd_rev_parse(args):
+    if args.type:
+        fmt = args.type.encode()
+    else:
+        fmt = None
+
+    repo = repo_find()
+    print(object_find(repo, args.name, fmt, follow=True))
