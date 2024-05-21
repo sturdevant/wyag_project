@@ -845,3 +845,16 @@ class GitIndexEntry(object):
         self.flag_stage = flag_stage
         # Name of the object (full path this time!)
         self.name = name
+
+class GitIndex(object):
+    version = None
+    entries = []
+    # ext = None
+    # sha = None
+
+    def __init__(self, version=2, entries=None):
+        if not entries:
+            entries = list()
+
+        self.version = version
+        self.entries = entries
