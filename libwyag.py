@@ -858,3 +858,40 @@ class GitIndex(object):
 
         self.version = version
         self.entries = entries
+
+def index_read(repo):
+    index_file = repo_file(repo, "index")
+
+    # New repositories have no index!
+    if not os.path.exists(index_file):
+        return GitIndex()
+
+    with open(index_file, 'rb') as f:
+        raw = f.read()
+
+    header = raw[:12]
+    signature = header[:4]
+    assert signature == b"DIRC" # Stands for "DirCache"
+    version = int.from_bytes(header[4:8], "big")
+    assert version == 2, "wyag only supports index file version 2"
+    count = int.from_bytes(header[8:12], "big")
+
+    entries = list()
+
+    content = raw[12:]
+    idx = 0
+    for i in range(0, count):
+        # Read creation time, as a unix timestamp (seconds since the "epoch")
+        ctime_s = int.from_bytes(content[idx: idx+4], "big")
+        # Read creation time, as nanoseconds after that timestamp, for extra
+        # precision.
+        ctime_ns = int.from_bytes(content[idx+4: idx+8], "big")
+        # Same for modification time: first seconds from epoch
+        mtime_s = int.from_bytes(content[idx+8: idx+12], "big")
+        # Then extra nanoseconds
+        mtime_ns = int.from_bytes(content[idx+12: idx+16], "big")
+        # Device id
+        dev = int.from_bytes(content[idx+16: idx+20], "big")
+        # Inode
+        ino = int.from_bytes(content[idx+20: idx+24], "big")
+        # TODO: Continue tomorrow
