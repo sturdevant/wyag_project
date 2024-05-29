@@ -894,4 +894,41 @@ def index_read(repo):
         dev = int.from_bytes(content[idx+16: idx+20], "big")
         # Inode
         ino = int.from_bytes(content[idx+20: idx+24], "big")
-        # TODO: Continue tomorrow
+        # Ignored.
+        unused = int.from_bytes(content[idx+24: idx+26], "big")
+        assert 0 == unused
+        mode = int.from_bytes(content[idx+26: idx+28], "big")
+        mode_type = mode >> 12
+        assert mode_type in [0b1000, 0b1010, 0b1110]
+        mode_perms = mode & 0b0000000111111111
+        # User ID
+        uid = int.from_bytes(content[idx+28: idx+32], "big")
+        # Group ID
+        gid = int.from_bytes(content[idx+32: idx+36], "big")
+        # Size
+        fsize = int.from_bytes(content[idx+36: idx+40], "big")
+        # SHA (object ID). We'll store it as a lowercase hex string
+        # for consistency
+        sha = format(int.from_bytes(content[idx+40: idx+60], "big"), "040x")
+        # Flags we're going to ignore
+        flags = int.from_bytes(content[idx+60: idx:62], "big")
+        # Parse flags
+        flag_assume_valid = (flags & 0b1000000000000000) != 0
+        flag_extended = (flags & 0b0100000000000000) != 0
+        assert not flag_extended
+        flag_stage = flags & 0b0011000000000000
+        # Length of the name. This is stored on 12 bits, some max value
+        # is 0xFFF, 4095. Since names can occasionally go beyond that length,
+        # git treats 0xFFF as meaning at least 0xFFF, and looks for the final
+        # 0x00 to find the end of the name --- at a small, and probably very
+        # rare, performance cost.
+        name_length = flags & 0b0000111111111111
+
+        # We've read 62 bytes so far
+        idx += 62
+
+        if name_length < 0xFFF:
+            assert content[idx + name_length] == 0x00
+            raw_name = content[idx:idx+name_length]
+            idx += name_length + 1
+            # TODO: else part, and then the rest
