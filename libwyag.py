@@ -931,4 +931,34 @@ def index_read(repo):
             assert content[idx + name_length] == 0x00
             raw_name = content[idx:idx+name_length]
             idx += name_length + 1
-            # TODO: else part, and then the rest
+        else:
+            print("Notice: Name is 0x{:X} bytes long.".format(name_length))
+            # Not tested enough, works w/ exactly 0xFFF bytes, but no more?
+            null_idx = content.find(b'\x00', idx + 0xFFF)
+            raw_name = content[idx: null_idx]
+            idx = null_idx + 1
+
+        # Just parse the name as utf8
+        name = raw_name.decode("utf8")
+
+        # Data is padded on multiples of eight bytes for pointer alignment,
+        # so we skip as many bytes as we need for the next read to start at
+        # the right position.
+        idx = 8 * ceil(idx / 8)
+
+        # And we add this entry to our list
+        entries.append(GitIndexEntry(ctime=(ctime_s, ctime_ns),
+                                     mtime=(mtime_s, mtime_ns),
+                                     dev=dev,
+                                     ino=ino,
+                                     mode_type=mode_type,
+                                     mode_perms=mode_perms,
+                                     uid=uid,
+                                     gid=gid,
+                                     fsize=fsize,
+                                     sha=sha,
+                                     flag_assume_valid=flag_assume_valid,
+                                     flag_stage=flag_stage,
+                                     name=name))
+
+        return GitIndex(version=version, entries=entries)
