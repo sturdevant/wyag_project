@@ -962,3 +962,6 @@ def index_read(repo):
                                      name=name))
 
         return GitIndex(version=version, entries=entries)
+
+argsp = argsubparsers.add_parser("ls-files", help="List all the stage files")
+argsp.add_argument("--verbose", action="store_true", help="Show everything.")
