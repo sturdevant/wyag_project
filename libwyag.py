@@ -965,3 +965,34 @@ def index_read(repo):
 
 argsp = argsubparsers.add_parser("ls-files", help="List all the stage files")
 argsp.add_argument("--verbose", action="store_true", help="Show everything.")
+
+def cmd_ls_files(args):
+    repo = repo_find()
+    index = index_read(repo)
+    if args.verbose:
+        print("Index file format v{}, containing {} entries.".format(
+            index.version, len(index.entries)))
+        
+    for e in index.entries:
+        print(e.name)
+        if args.verbose:
+            print("  {} with perms: {:o}".format(
+                { 0b1000: "regular file",
+                  0b1010: "symlink",
+                  0b1110: "git link" }[e.mode_type],
+                e.mode_perms))
+            print("  on blob: {}".format(e.sha))
+            print("  created: {}.{}, modified: {}.{}".format(
+                datetime.fromtimestamp(e.ctime[0]),
+                e.ctime[1],
+                datetime.fromtimestamp(e.mtime[0]),
+                e.mtime[1]))
+            print("  device: {}, inode: {}".format(e.dev, e.ino))
+            print("  user: {} ({})  group: {} ({})".format(
+                pwd.getpwuid(e.uid).pw_name,
+                e.uid,
+                grp.getgrgid(e.gid).gr_name,
+                e.gid))
+            print("  flags: stage={} assume_valid={}".format(
+                e.flag_stage,
+                e.flag_assume_valid))
