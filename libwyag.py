@@ -996,3 +996,13 @@ def cmd_ls_files(args):
             print("  flags: stage={} assume_valid={}".format(
                 e.flag_stage,
                 e.flag_assume_valid))
+
+argsp = argsubparsers.add_parser("check-ignore"), help="Check path(s) against ignore rules.")
+argsp.add_argument("path", nargs="+", help="Paths to check")
+
+def cmd_check_ignore(args):
+    repo = repo_find()
+    rules = git_ignore_read(repo)
+    for path in args.path:
+        if check_ignore(rules, path):
+            print(path)
