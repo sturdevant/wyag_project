@@ -1006,3 +1006,25 @@ def cmd_check_ignore(args):
     for path in args.path:
         if check_ignore(rules, path):
             print(path)
+
+def gitignore_parse1(raw):
+    raw = raw.strip() # Remove leading/trailing spaces
+
+    if not raw or raw[0] == "#":
+        return None
+    elif raw[0] == "!":
+        return (raw[1:], False)
+    elif raw[0] == "\\":
+        return (raw[1:], True)
+    else:
+        return (raw, True)
+
+def gitignore_parse(lines):
+    ret = list()
+
+    for line in lines:
+        parsed = gitignore_parse1(line)
+        if parsed:
+            ret.append(parsed)
+
+    return ret
