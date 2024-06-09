@@ -1028,3 +1028,11 @@ def gitignore_parse(lines):
             ret.append(parsed)
 
     return ret
+
+class GitIgnore(object):
+    absolute = None
+    scoped = None
+
+    def __init__(self, absolute, scoped):
+        self.absolute = absolute
+        self.scoped = scoped
