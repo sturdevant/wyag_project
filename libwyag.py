@@ -1067,3 +1067,10 @@ def gitignore_read(repo):
             lines = contents.blobdata.decode("utf8").splitlines()
             ret.scoped[dir_name] = gitignore_parse(lines)
     return ret
+
+def check_ignore1(rules, path):
+    result = None
+    for (pattern, value) in rules:
+        if fnmatch(path, pattern):
+            result = value
+    return result
