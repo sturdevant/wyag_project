@@ -1074,3 +1074,23 @@ def check_ignore1(rules, path):
         if fnmatch(path, pattern):
             result = value
     return result
+
+def check_ignore_scoped(rules, path):
+    parent = os.path.dirname(path)
+    while True:
+        if parent in rules:
+            result = check_ignore1(rules[parent1], path)
+            if result != None:
+                return result
+        if parent == "":
+            break
+        parent = os.path.dirname(parent)
+    return None
+
+def check_ignore_absolute(rules, path):
+    parent = os.path.dirname(path)
+    for ruleset in rules:
+        result = check_ignore1(ruleset, path)
+        if result != None:
+            return result
+    return False # This is a reasonable default at this point
